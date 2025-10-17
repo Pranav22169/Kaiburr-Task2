@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kaiburr-task2
+  namespace: kaiburr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kaiburr-task2
+  template:
+    metadata:
+      labels:
+        app: kaiburr-task2
+    spec:
+      serviceAccountName: task-runner-sa     # ✅ Added line
+      containers:
+        - name: kaiburr-task2
+          image: pranav/task2:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATA_MONGODB_URI
+              value: mongodb://mongo.kaiburr.svc.cluster.local:27017/kaiburrdb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kaiburr-task2-service
+  namespace: kaiburr
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
+  selector:
+    app: kaiburr-task2
